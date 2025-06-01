@@ -5,51 +5,25 @@ import { useState, useEffect } from "react";
 import type { ParsePhoneNumberOutput } from "@/ai/flows/parse-phone-number";
 import { PhoneNumberForm } from "@/components/phone-number-form";
 import { PhoneNumberDetails } from "@/components/phone-number-details";
-import { LocationMap } from "@/components/location-map";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Terminal } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { countryCoordinates } from "@/lib/country-coordinates";
-import type { Coordinates } from "@/lib/country-coordinates";
 
 
 export default function HomePage() {
   const [phoneNumberDetails, setPhoneNumberDetails] = useState<ParsePhoneNumberOutput | null>(null);
-  const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
-  const [locationScope, setLocationScope] = useState<'Region' | 'Country' | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [mapLocationKey, setMapLocationKey] = useState<number>(0);
 
   const handleSuccess = (data: ParsePhoneNumberOutput) => {
     setPhoneNumberDetails(data);
     setError(null);
-
-    let newCoordinates: Coordinates | null = null;
-    let newLocationScope: 'Region' | 'Country' | null = null;
-
-    if (data.regionLatitude !== null && data.regionLongitude !== null) {
-      newCoordinates = { lat: data.regionLatitude, lng: data.regionLongitude, zoom: 10 };
-      newLocationScope = 'Region';
-    } else if (data.countryCode) {
-      const countryCoords = countryCoordinates[data.countryCode.toUpperCase()];
-      if (countryCoords) {
-        newCoordinates = { ...countryCoords, zoom: countryCoords.zoom || 5 };
-        newLocationScope = 'Country';
-      }
-    }
-    
-    setCoordinates(newCoordinates);
-    setLocationScope(newLocationScope);
-    setMapLocationKey(prevKey => prevKey + 1); // Force remount map
   };
 
   const handleError = (message: string) => {
     setError(message);
     setPhoneNumberDetails(null);
-    setCoordinates(null);
-    setLocationScope(null);
   };
 
   const handleLoading = (loading: boolean) => {
@@ -57,8 +31,6 @@ export default function HomePage() {
     if (loading) {
       setError(null); 
       setPhoneNumberDetails(null);
-      setCoordinates(null);
-      setLocationScope(null);
     }
   };
 
@@ -109,14 +81,6 @@ export default function HomePage() {
                 ))}
               </CardContent>
             </Card>
-            <Card className="w-full shadow-lg">
-              <CardHeader>
-                 <Skeleton className="h-8 w-2/5" /> {/* For Title "Location Map" */}
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-64 w-full" /> {/* For Map Area */}
-              </CardContent>
-            </Card>
           </div>
         )}
 
@@ -124,20 +88,7 @@ export default function HomePage() {
           <div className="space-y-6">
             <PhoneNumberDetails 
               details={phoneNumberDetails} 
-              latitude={coordinates?.lat || null}
-              longitude={coordinates?.lng || null}
-              locationScope={locationScope}
             />
-            {coordinates && (
-              <LocationMap
-                key={mapLocationKey} // Add key here
-                latitude={coordinates.lat}
-                longitude={coordinates.lng}
-                zoom={coordinates.zoom || 10}
-                locationName={phoneNumberDetails.regionDescription || phoneNumberDetails.countryCode || "Location"}
-                locationScope={locationScope}
-              />
-            )}
           </div>
         )}
       </div>

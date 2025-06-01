@@ -14,15 +14,10 @@ import {
   HelpCircle,
   AlertCircle,
   Smartphone,
-  LocateFixed, 
-  Compass,    
 } from "lucide-react";
 
 interface PhoneNumberDetailsProps {
   details: ParsePhoneNumberOutput;
-  latitude: number | null;
-  longitude: number | null;
-  locationScope: 'Region' | 'Country' | null;
 }
 
 const DetailItem: React.FC<{ icon: React.ElementType; label: string; value: string | number | boolean | null | undefined; valueClassName?: string }> = ({
@@ -40,11 +35,7 @@ const DetailItem: React.FC<{ icon: React.ElementType; label: string; value: stri
   } else if (typeof value === 'boolean') {
     displayValue = value ? "Yes" : "No";
   } else if (typeof value === 'number') {
-    if (label.toLowerCase().includes("latitude") || label.toLowerCase().includes("longitude")) {
-      displayValue = value.toFixed(4); 
-    } else {
-      displayValue = String(value); 
-    }
+    displayValue = String(value); 
   }
 
   return (
@@ -61,9 +52,7 @@ const DetailItem: React.FC<{ icon: React.ElementType; label: string; value: stri
 };
 
 
-export function PhoneNumberDetails({ details, latitude, longitude, locationScope }: PhoneNumberDetailsProps) {
-  const latLabel = `Approx. Latitude (${locationScope || 'N/A'})`;
-  const lngLabel = `Approx. Longitude (${locationScope || 'N/A'})`;
+export function PhoneNumberDetails({ details }: PhoneNumberDetailsProps) {
 
   return (
     <Card className="w-full shadow-lg overflow-hidden">
@@ -82,10 +71,6 @@ export function PhoneNumberDetails({ details, latitude, longitude, locationScope
         <DetailItem icon={Signal} label="Carrier" value={details.carrier} />
         <Separator />
         <DetailItem icon={Clock} label="Timezone(s)" value={details.timezone} />
-        <Separator />
-        <DetailItem icon={LocateFixed} label={latLabel} value={latitude} />
-        <Separator />
-        <DetailItem icon={Compass} label={lngLabel} value={longitude} />
         <Separator />
         <div className="flex items-start space-x-3 py-3">
           {details.isValidNumber === null ? <HelpCircle className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" /> : details.isValidNumber ? <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 shrink-0" /> : <XCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />}
@@ -112,4 +97,3 @@ export function PhoneNumberDetails({ details, latitude, longitude, locationScope
     </Card>
   );
 }
-
