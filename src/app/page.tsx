@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import type { ParsePhoneNumberOutput } from "@/ai/flows/parse-phone-number";
 import { PhoneNumberForm } from "@/components/phone-number-form";
 import { PhoneNumberDetails } from "@/components/phone-number-details";
+import { LocationMap } from "@/components/location-map";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Terminal } from "lucide-react";
@@ -19,22 +20,29 @@ export default function HomePage() {
   const [locationScope, setLocationScope] = useState<'Region' | 'Country' | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [mapLocationKey, setMapLocationKey] = useState<number>(0);
 
   const handleSuccess = (data: ParsePhoneNumberOutput) => {
     setPhoneNumberDetails(data);
     setError(null);
 
+    let newCoordinates: Coordinates | null = null;
+    let newLocationScope: 'Region' | 'Country' | null = null;
+
     if (data.regionLatitude !== null && data.regionLongitude !== null) {
-      setCoordinates({ lat: data.regionLatitude, lng: data.regionLongitude });
-      setLocationScope('Region');
+      newCoordinates = { lat: data.regionLatitude, lng: data.regionLongitude, zoom: 10 };
+      newLocationScope = 'Region';
     } else if (data.countryCode) {
       const countryCoords = countryCoordinates[data.countryCode.toUpperCase()];
-      setCoordinates(countryCoords || null);
-      setLocationScope(countryCoords ? 'Country' : null);
-    } else {
-      setCoordinates(null);
-      setLocationScope(null);
+      if (countryCoords) {
+        newCoordinates = { ...countryCoords, zoom: countryCoords.zoom || 5 };
+        newLocationScope = 'Country';
+      }
     }
+    
+    setCoordinates(newCoordinates);
+    setLocationScope(newLocationScope);
+    setMapLocationKey(prevKey => prevKey + 1); // Force remount map
   };
 
   const handleError = (message: string) => {
@@ -60,7 +68,7 @@ export default function HomePage() {
         <Card className="w-full shadow-2xl overflow-hidden">
           <CardHeader className="bg-primary text-primary-foreground p-6">
             <CardTitle className="text-3xl font-headline text-center">
-              <span className="bg-gradient-to-r from-lime-400 via-green-500 to-emerald-400 text-transparent bg-clip-text">
+               <span className="bg-gradient-to-r from-green-400 via-emerald-500 to-teal-600 text-transparent bg-clip-text">
                 TraceIt
               </span>
             </CardTitle>
@@ -89,7 +97,7 @@ export default function HomePage() {
           <div className="space-y-6">
             <Card className="w-full shadow-lg">
               <CardHeader>
-                <Skeleton className="h-8 w-3/5" />
+                <Skeleton className="h-8 w-3/5" /> {/* For Title "Phone Number Details" */}
               </CardHeader>
               <CardContent className="space-y-4">
                 {[...Array(10)].map((_, i) => ( 
@@ -99,6 +107,14 @@ export default function HomePage() {
                     {i < 9 && <Skeleton className="h-px w-full mt-2" />}
                   </div>
                 ))}
+              </CardContent>
+            </Card>
+            <Card className="w-full shadow-lg">
+              <CardHeader>
+                 <Skeleton className="h-8 w-2/5" /> {/* For Title "Location Map" */}
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-64 w-full" /> {/* For Map Area */}
               </CardContent>
             </Card>
           </div>
@@ -112,6 +128,16 @@ export default function HomePage() {
               longitude={coordinates?.lng || null}
               locationScope={locationScope}
             />
+            {coordinates && (
+              <LocationMap
+                key={mapLocationKey} // Add key here
+                latitude={coordinates.lat}
+                longitude={coordinates.lng}
+                zoom={coordinates.zoom || 10}
+                locationName={phoneNumberDetails.regionDescription || phoneNumberDetails.countryCode || "Location"}
+                locationScope={locationScope}
+              />
+            )}
           </div>
         )}
       </div>
