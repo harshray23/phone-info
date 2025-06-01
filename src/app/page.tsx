@@ -7,7 +7,7 @@ import { PhoneNumberForm } from "@/components/phone-number-form";
 import { PhoneNumberDetails } from "@/components/phone-number-details";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Terminal, LocateFixed, Compass } from "lucide-react";
+import { Terminal } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { countryCoordinates } from "@/lib/country-coordinates";
 import type { Coordinates } from "@/lib/country-coordinates";
@@ -16,17 +16,24 @@ import type { Coordinates } from "@/lib/country-coordinates";
 export default function HomePage() {
   const [phoneNumberDetails, setPhoneNumberDetails] = useState<ParsePhoneNumberOutput | null>(null);
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
+  const [locationScope, setLocationScope] = useState<'Region' | 'Country' | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSuccess = (data: ParsePhoneNumberOutput) => {
     setPhoneNumberDetails(data);
     setError(null);
-    if (data.countryCode) {
-      const coords = countryCoordinates[data.countryCode.toUpperCase()];
-      setCoordinates(coords || null);
+
+    if (data.regionLatitude !== null && data.regionLongitude !== null) {
+      setCoordinates({ lat: data.regionLatitude, lng: data.regionLongitude });
+      setLocationScope('Region');
+    } else if (data.countryCode) {
+      const countryCoords = countryCoordinates[data.countryCode.toUpperCase()];
+      setCoordinates(countryCoords || null);
+      setLocationScope(countryCoords ? 'Country' : null);
     } else {
       setCoordinates(null);
+      setLocationScope(null);
     }
   };
 
@@ -34,6 +41,7 @@ export default function HomePage() {
     setError(message);
     setPhoneNumberDetails(null);
     setCoordinates(null);
+    setLocationScope(null);
   };
 
   const handleLoading = (loading: boolean) => {
@@ -42,6 +50,7 @@ export default function HomePage() {
       setError(null); 
       setPhoneNumberDetails(null);
       setCoordinates(null);
+      setLocationScope(null);
     }
   };
 
@@ -79,11 +88,11 @@ export default function HomePage() {
                 <Skeleton className="h-8 w-3/5" />
               </CardHeader>
               <CardContent className="space-y-4">
-                {[...Array(8)].map((_, i) => ( // Increased array size for more skeleton items if needed
+                {[...Array(10)].map((_, i) => ( 
                   <div key={i} className="space-y-2">
                     <Skeleton className="h-4 w-1/4" />
                     <Skeleton className="h-4 w-full" />
-                    {i < 7 && <Skeleton className="h-px w-full mt-2" />}
+                    {i < 9 && <Skeleton className="h-px w-full mt-2" />}
                   </div>
                 ))}
               </CardContent>
@@ -97,6 +106,7 @@ export default function HomePage() {
               details={phoneNumberDetails} 
               latitude={coordinates?.lat || null}
               longitude={coordinates?.lng || null}
+              locationScope={locationScope}
             />
           </div>
         )}

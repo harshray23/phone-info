@@ -10,7 +10,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z}from 'genkit';
 import { PhoneNumberUtil, PhoneNumberFormat, PhoneNumberType } from 'google-libphonenumber';
 
 const ParsePhoneNumberInputSchema = z.object({
@@ -30,6 +30,8 @@ const ParsePhoneNumberOutputSchema = z.object({
   isValidNumber: z.boolean().describe('Whether the phone number is a valid number.').nullable(),
   numberType: z.string().describe('The type of the phone number (e.g., MOBILE, FIXED_LINE).').nullable(),
   isPossibleNumber: z.boolean().describe('Whether the phone number is a possible number (a looser check than isValidNumber).').nullable(),
+  regionLatitude: z.number().describe('The approximate latitude of the determined State/Region.').nullable(),
+  regionLongitude: z.number().describe('The approximate longitude of the determined State/Region.').nullable(),
 });
 export type ParsePhoneNumberOutput = z.infer<typeof ParsePhoneNumberOutputSchema>;
 
@@ -57,10 +59,10 @@ const getPhoneNumberTypeString = (type: PhoneNumberType | undefined): string | n
 };
 
 const parsePhoneNumberTool = ai.defineTool({
-    name: 'parsePhoneNumberLibTool', // Renamed to avoid conflict if a flow is also named parsePhoneNumber
-    description: 'Parses a phone number using google-libphonenumber to get basic details. This tool provides countryCode, nationalNumber, e164Format, timezone, isValidNumber, numberType, and isPossibleNumber. It returns null for regionDescription and carrier, which should be determined by the LLM.',
+    name: 'parsePhoneNumberLibTool',
+    description: 'Parses a phone number using google-libphonenumber to get basic details. This tool provides countryCode, nationalNumber, e164Format, timezone, isValidNumber, numberType, and isPossibleNumber. It returns null for regionDescription, carrier, regionLatitude, and regionLongitude, which should be determined by the LLM.',
     inputSchema: ParsePhoneNumberInputSchema,
-    outputSchema: ParsePhoneNumberOutputSchema, // Tool must conform to the final output schema
+    outputSchema: ParsePhoneNumberOutputSchema, 
   },
   async (input: ParsePhoneNumberInput) => {
     const phoneUtil = PhoneNumberUtil.getInstance();
@@ -77,18 +79,19 @@ const parsePhoneNumberTool = ai.defineTool({
 
       return {
         countryCode: countryCode || null,
-        regionDescription: null, // This tool cannot provide detailed region/state. LLM should fill this.
+        regionDescription: null, 
         nationalNumber: nationalNumber || null,
         e164Format: e164Format || null,
-        carrier: null, // This tool cannot reliably provide carrier. LLM should fill this.
+        carrier: null, 
         timezone: timezones && timezones.length > 0 ? timezones.join(', ') : null,
         isValidNumber: isValidNumber,
         numberType: getPhoneNumberTypeString(numberType),
         isPossibleNumber: isPossibleNumber,
+        regionLatitude: null,
+        regionLongitude: null,
       };
     } catch (error: any) {
       console.error('Error parsing phone number with google-libphonenumber:', error.message);
-      // Return schema-compliant nulls for error cases
       return {
         countryCode: null,
         regionDescription: null,
@@ -99,6 +102,8 @@ const parsePhoneNumberTool = ai.defineTool({
         isValidNumber: false,
         numberType: null,
         isPossibleNumber: false,
+        regionLatitude: null,
+        regionLongitude: null,
       };
     }
   }
@@ -121,20 +126,21 @@ First, use the 'parsePhoneNumberLibTool' to get foundational information. This t
 - numberType
 - isPossibleNumber
 
-The 'parsePhoneNumberLibTool' will return 'null' for 'regionDescription' and 'carrier'.
+The 'parsePhoneNumberLibTool' will return 'null' for 'regionDescription', 'carrier', 'regionLatitude', and 'regionLongitude'.
 
 After getting the tool's output, your main responsibility is to:
 1. Determine the 'regionDescription': This is the specific State or Region name (e.g., "California", "West Bengal", "New South Wales"), not just the country name. Use the 'countryCode' and 'nationalNumber' from the tool's output and your general knowledge to deduce this.
 2. Determine the 'carrier': This is the telecommunications company providing service for the number (e.g., "Verizon", "Reliance Jio", "Vodafone"). Use the 'countryCode', 'nationalNumber', and your general knowledge.
+3. Determine 'regionLatitude' and 'regionLongitude': These are the approximate geographic coordinates (latitude and longitude) for the 'regionDescription' you identified in step 1. Use your general knowledge or an internal geolocation lookup if available.
 
-Combine the information from the tool with your determined 'regionDescription' and 'carrier'.
+Combine the information from the tool with your determined 'regionDescription', 'carrier', 'regionLatitude', and 'regionLongitude'.
 Return all fields as defined in the ParsePhoneNumberOutputSchema.
-If you cannot confidently determine 'regionDescription' or 'carrier', you may return them as null.
+If you cannot confidently determine any of these, you may return them as null.
 Ensure the output strictly adheres to the ParsePhoneNumberOutputSchema.
 `,
   input: {schema: ParsePhoneNumberInputSchema},
   output: {schema: ParsePhoneNumberOutputSchema},
-  tools: [parsePhoneNumberTool], // Provide the tool to the prompt
+  tools: [parsePhoneNumberTool],
 });
 
 const parsePhoneNumberFlow = ai.defineFlow(
@@ -146,12 +152,8 @@ const parsePhoneNumberFlow = ai.defineFlow(
   async (input: ParsePhoneNumberInput): Promise<ParsePhoneNumberOutput> => {
     const {output} = await parsePhoneNumberPrompt(input);
     if (!output) {
-        // This case should ideally be handled by Zod schema validation if the LLM returns non-compliant output.
-        // However, if the LLM literally returns nothing, this error is appropriate.
         throw new Error("The AI prompt did not return a valid output for parsing the phone number.");
     }
-    // Ensure all fields are present, defaulting to null if necessary, to match the schema.
-    // Zod parsing of the output in definePrompt should handle this, but defensive coding is good.
     return {
         countryCode: output.countryCode || null,
         regionDescription: output.regionDescription || null,
@@ -162,6 +164,9 @@ const parsePhoneNumberFlow = ai.defineFlow(
         isValidNumber: typeof output.isValidNumber === 'boolean' ? output.isValidNumber : null,
         numberType: output.numberType || null,
         isPossibleNumber: typeof output.isPossibleNumber === 'boolean' ? output.isPossibleNumber : null,
+        regionLatitude: typeof output.regionLatitude === 'number' ? output.regionLatitude : null,
+        regionLongitude: typeof output.regionLongitude === 'number' ? output.regionLongitude : null,
     };
   }
 );
+
