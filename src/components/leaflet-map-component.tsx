@@ -4,7 +4,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import L, { type Map as LeafletMapInstance } from 'leaflet'; // Import Map type
+import L, { type Map as LeafletMapInstance } from 'leaflet';
 import { defaultMapCenter } from '@/lib/country-coordinates';
 
 // Fix for default icon path issue with Webpack in Next.js
@@ -51,6 +51,7 @@ const MapUpdater: React.FC<MapUpdaterProps> = ({ targetCenter, targetZoom, marke
         markerRef.current = newMarker;
       }
     }
+    // Cleanup for the marker when MapUpdater unmounts or dependencies change
     return () => {
       if (markerRef.current && map && map.hasLayer(markerRef.current)) {
         try {
@@ -79,16 +80,18 @@ const LeafletMapComponent: React.FC<LeafletMapComponentProps> = ({
   markerPosition,
   popupText,
 }) => {
-  const [mapInstance, setMapInstance] = useState<LeafletMapInstance | null>(null);
+  const mapInstanceRef = useRef<LeafletMapInstance | null>(null);
+  // const [isMapReady, setIsMapReady] = useState(false); // Could be used if MapUpdater needs to wait
 
   useEffect(() => {
-    // Cleanup function to remove the map instance when the component unmounts
+    // This effect's cleanup runs when LeafletMapComponent unmounts
     return () => {
-      if (mapInstance) {
-        mapInstance.remove();
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
       }
     };
-  }, [mapInstance]); // This effect depends on mapInstance
+  }, []); // Empty dependency array ensures cleanup runs only on unmount
 
   return (
     <MapContainer
@@ -97,12 +100,16 @@ const LeafletMapComponent: React.FC<LeafletMapComponentProps> = ({
       scrollWheelZoom={true}
       style={{ height: '100%', width: '100%' }}
       className="rounded-md"
-      whenCreated={setMapInstance} // Capture the map instance
+      whenCreated={(map) => {
+        mapInstanceRef.current = map;
+        // setIsMapReady(true); // Trigger re-render if child components depend on map instance via state
+      }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+      {/* MapUpdater uses useMap(), so it will get the map instance from context once MapContainer is ready */}
       <MapUpdater
         targetCenter={targetCenter}
         targetZoom={targetZoom}

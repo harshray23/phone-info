@@ -26,7 +26,7 @@ interface LocationMapProps {
 }
 
 export function LocationMap({ countryCode }: LocationMapProps) {
-  const [mapDisplayProps, setMapDisplayProps] = useState<{ // Renamed to avoid confusion with LeafletMapComponent props
+  const [mapDisplayProps, setMapDisplayProps] = useState<{
     center: [number, number];
     zoom: number;
     markerPosition: [number, number] | null;
@@ -37,6 +37,7 @@ export function LocationMap({ countryCode }: LocationMapProps) {
     markerPosition: null,
     countryName: null,
   });
+  const [mapKey, setMapKey] = useState(0); // Key to force LeafletMap remount
 
   useEffect(() => {
     if (countryCode && countryCoordinates[countryCode.toUpperCase()]) {
@@ -45,7 +46,7 @@ export function LocationMap({ countryCode }: LocationMapProps) {
         center: [coords.lat, coords.lng],
         zoom: coords.zoom || defaultMapCenter.zoom || 2,
         markerPosition: [coords.lat, coords.lng],
-        countryName: countryCode.toUpperCase(), 
+        countryName: countryCode.toUpperCase(),
       });
     } else {
       setMapDisplayProps({
@@ -55,6 +56,7 @@ export function LocationMap({ countryCode }: LocationMapProps) {
         countryName: null,
       });
     }
+    setMapKey(prevKey => prevKey + 1); // Increment key to force remount
   }, [countryCode]);
 
   return (
@@ -65,8 +67,9 @@ export function LocationMap({ countryCode }: LocationMapProps) {
       <CardContent>
         <div style={{ height: '400px', width: '100%' }} className="rounded-md overflow-hidden border bg-muted">
           <LeafletMap
-            targetCenter={mapDisplayProps.center} // Pass as targetCenter
-            targetZoom={mapDisplayProps.zoom}     // Pass as targetZoom
+            key={mapKey} // Use the changing key here
+            targetCenter={mapDisplayProps.center}
+            targetZoom={mapDisplayProps.zoom}
             markerPosition={mapDisplayProps.markerPosition}
             popupText={mapDisplayProps.countryName}
           />
