@@ -3,8 +3,8 @@ import type { ParsePhoneNumberOutput } from "@/ai/flows/parse-phone-number";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
-  Globe, // Keep for Country Code
-  MapPin, // New for State/Region
+  Globe, 
+  MapPin, 
   Phone,
   Hash,
   Signal,
@@ -14,11 +14,14 @@ import {
   HelpCircle,
   AlertCircle,
   Smartphone,
-  // Info, // Not currently used
+  LocateFixed, // Icon for Latitude
+  Compass,    // Icon for Longitude
 } from "lucide-react";
 
 interface PhoneNumberDetailsProps {
   details: ParsePhoneNumberOutput;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 const DetailItem: React.FC<{ icon: React.ElementType; label: string; value: string | number | boolean | null | undefined; valueClassName?: string }> = ({
@@ -30,12 +33,13 @@ const DetailItem: React.FC<{ icon: React.ElementType; label: string; value: stri
   let displayValue: string | React.ReactNode = String(value);
   let iconColorClass = "text-primary";
 
-  if (value === null || value === undefined || value === "") {
+  if (value === null || value === undefined || value === "" || (typeof value === 'number' && isNaN(value))) {
     displayValue = "Not available";
     iconColorClass = "text-muted-foreground";
   } else if (typeof value === 'boolean') {
     displayValue = value ? "Yes" : "No";
-    // Specific boolean styling is handled by dedicated sections below, but this is a general fallback.
+  } else if (typeof value === 'number') {
+    displayValue = value.toFixed(4); // Format numbers to 4 decimal places
   }
 
 
@@ -44,7 +48,7 @@ const DetailItem: React.FC<{ icon: React.ElementType; label: string; value: stri
       <Icon className={`h-5 w-5 ${iconColorClass} mt-0.5 shrink-0`} />
       <div className="flex flex-col sm:flex-row sm:items-start w-full">
         <span className="font-medium text-sm w-full sm:w-2/5 md:w-1/3 shrink-0">{label}:</span>
-        <span className={`text-sm text-foreground break-words min-w-0 ${value === "Not available" ? "text-muted-foreground" : ""} ${valueClassName}`}>
+        <span className={`text-sm text-foreground break-words min-w-0 ${displayValue === "Not available" ? "text-muted-foreground" : ""} ${valueClassName}`}>
           {displayValue}
         </span>
       </div>
@@ -53,7 +57,7 @@ const DetailItem: React.FC<{ icon: React.ElementType; label: string; value: stri
 };
 
 
-export function PhoneNumberDetails({ details }: PhoneNumberDetailsProps) {
+export function PhoneNumberDetails({ details, latitude, longitude }: PhoneNumberDetailsProps) {
   return (
     <Card className="w-full shadow-lg overflow-hidden">
       <CardHeader className="bg-gray-50 dark:bg-gray-800">
@@ -71,6 +75,10 @@ export function PhoneNumberDetails({ details }: PhoneNumberDetailsProps) {
         <DetailItem icon={Signal} label="Carrier" value={details.carrier} />
         <Separator />
         <DetailItem icon={Clock} label="Timezone(s)" value={details.timezone} />
+        <Separator />
+         <DetailItem icon={LocateFixed} label="Latitude" value={latitude} />
+        <Separator />
+        <DetailItem icon={Compass} label="Longitude" value={longitude} />
         <Separator />
         <div className="flex items-start space-x-3 py-3">
           {details.isValidNumber === null ? <HelpCircle className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" /> : details.isValidNumber ? <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 shrink-0" /> : <XCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />}

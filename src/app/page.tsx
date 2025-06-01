@@ -1,36 +1,47 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { ParsePhoneNumberOutput } from "@/ai/flows/parse-phone-number";
 import { PhoneNumberForm } from "@/components/phone-number-form";
 import { PhoneNumberDetails } from "@/components/phone-number-details";
-import { LocationMap } from "@/components/location-map";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Terminal } from "lucide-react";
+import { Terminal, LocateFixed, Compass } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { countryCoordinates } from "@/lib/country-coordinates";
+import type { Coordinates } from "@/lib/country-coordinates";
+
 
 export default function HomePage() {
   const [phoneNumberDetails, setPhoneNumberDetails] = useState<ParsePhoneNumberOutput | null>(null);
+  const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSuccess = (data: ParsePhoneNumberOutput) => {
     setPhoneNumberDetails(data);
     setError(null);
+    if (data.countryCode) {
+      const coords = countryCoordinates[data.countryCode.toUpperCase()];
+      setCoordinates(coords || null);
+    } else {
+      setCoordinates(null);
+    }
   };
 
   const handleError = (message: string) => {
     setError(message);
-    setPhoneNumberDetails(null); 
+    setPhoneNumberDetails(null);
+    setCoordinates(null);
   };
 
   const handleLoading = (loading: boolean) => {
     setIsLoading(loading);
     if (loading) {
-      setError(null); // Clear error when starting a new request
-      setPhoneNumberDetails(null); // Clear previous details
+      setError(null); 
+      setPhoneNumberDetails(null);
+      setCoordinates(null);
     }
   };
 
@@ -68,21 +79,13 @@ export default function HomePage() {
                 <Skeleton className="h-8 w-3/5" />
               </CardHeader>
               <CardContent className="space-y-4">
-                {[...Array(5)].map((_, i) => (
+                {[...Array(8)].map((_, i) => ( // Increased array size for more skeleton items if needed
                   <div key={i} className="space-y-2">
                     <Skeleton className="h-4 w-1/4" />
                     <Skeleton className="h-4 w-full" />
-                    {i < 4 && <Skeleton className="h-px w-full mt-2" />}
+                    {i < 7 && <Skeleton className="h-px w-full mt-2" />}
                   </div>
                 ))}
-              </CardContent>
-            </Card>
-            <Card className="w-full shadow-lg">
-              <CardHeader>
-                <Skeleton className="h-8 w-2/5" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-64 w-full" />
               </CardContent>
             </Card>
           </div>
@@ -90,8 +93,11 @@ export default function HomePage() {
 
         {!isLoading && phoneNumberDetails && (
           <div className="space-y-6">
-            <PhoneNumberDetails details={phoneNumberDetails} />
-            <LocationMap countryCode={phoneNumberDetails.countryCode || null} />
+            <PhoneNumberDetails 
+              details={phoneNumberDetails} 
+              latitude={coordinates?.lat || null}
+              longitude={coordinates?.lng || null}
+            />
           </div>
         )}
       </div>
