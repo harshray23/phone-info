@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MapPin } from 'lucide-react';
 
-// Dynamically import the Leaflet map component
 const LeafletMap = dynamic(() => import('@/components/leaflet-map-component'), {
   ssr: false,
   loading: () => (
@@ -27,7 +26,7 @@ interface LocationMapProps {
 }
 
 export function LocationMap({ countryCode }: LocationMapProps) {
-  const [mapProps, setMapProps] = useState<{
+  const [mapDisplayProps, setMapDisplayProps] = useState<{ // Renamed to avoid confusion with LeafletMapComponent props
     center: [number, number];
     zoom: number;
     markerPosition: [number, number] | null;
@@ -42,14 +41,14 @@ export function LocationMap({ countryCode }: LocationMapProps) {
   useEffect(() => {
     if (countryCode && countryCoordinates[countryCode.toUpperCase()]) {
       const coords: Coordinates = countryCoordinates[countryCode.toUpperCase()];
-      setMapProps({
+      setMapDisplayProps({
         center: [coords.lat, coords.lng],
         zoom: coords.zoom || defaultMapCenter.zoom || 2,
         markerPosition: [coords.lat, coords.lng],
-        countryName: countryCode.toUpperCase(), // Ideally, get a full name
+        countryName: countryCode.toUpperCase(), 
       });
     } else {
-      setMapProps({
+      setMapDisplayProps({
         center: [defaultMapCenter.lat, defaultMapCenter.lng],
         zoom: defaultMapCenter.zoom || 2,
         markerPosition: null,
@@ -66,10 +65,10 @@ export function LocationMap({ countryCode }: LocationMapProps) {
       <CardContent>
         <div style={{ height: '400px', width: '100%' }} className="rounded-md overflow-hidden border bg-muted">
           <LeafletMap
-            center={mapProps.center}
-            zoom={mapProps.zoom}
-            markerPosition={mapProps.markerPosition}
-            popupText={mapProps.countryName}
+            targetCenter={mapDisplayProps.center} // Pass as targetCenter
+            targetZoom={mapDisplayProps.zoom}     // Pass as targetZoom
+            markerPosition={mapDisplayProps.markerPosition}
+            popupText={mapDisplayProps.countryName}
           />
         </div>
       </CardContent>

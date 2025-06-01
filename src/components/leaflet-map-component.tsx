@@ -2,12 +2,12 @@
 "use client";
 
 import React, { useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { defaultMapCenter } from '@/lib/country-coordinates';
 
 // Fix for default icon path issue with Webpack in Next.js
-// This needs to run only on the client side.
 if (typeof window !== 'undefined') {
   // @ts-ignore In case this part of L.Icon.Default is not recognized by TS
   delete L.Icon.Default.prototype._getIconUrl;
@@ -20,90 +20,80 @@ if (typeof window !== 'undefined') {
 }
 
 interface MapUpdaterProps {
-  center: L.LatLngExpression;
-  zoom: number;
+  targetCenter: L.LatLngExpression; // Renamed from 'center'
+  targetZoom: number;           // Renamed from 'zoom'
   markerPosition: [number, number] | null;
   popupText: string | null;
 }
 
-const MapUpdater: React.FC<MapUpdaterProps> = ({ center, zoom, markerPosition, popupText }) => {
+const MapUpdater: React.FC<MapUpdaterProps> = ({ targetCenter, targetZoom, markerPosition, popupText }) => {
   const map = useMap();
   const markerRef = useRef<L.Marker | null>(null);
 
   useEffect(() => {
     if (map) {
-      map.setView(center, zoom);
+      map.setView(targetCenter, targetZoom);
     }
-  }, [map, center, zoom]);
+  }, [map, targetCenter, targetZoom]);
 
   useEffect(() => {
     if (map) {
-      // Remove existing marker if it exists
       if (markerRef.current) {
         markerRef.current.remove();
         markerRef.current = null;
       }
 
-      // Add new marker if position is provided
       if (markerPosition) {
         const newMarker = L.marker(markerPosition).addTo(map);
         if (popupText) {
           newMarker.bindPopup(popupText);
-          // newMarker.openPopup(); // Optionally open popup immediately
         }
         markerRef.current = newMarker;
       }
     }
-    // Cleanup function to remove marker when component unmounts or dependencies change
     return () => {
-      if (markerRef.current && map.hasLayer(markerRef.current)) {
-         // Check if map still has the layer before trying to remove
+      if (markerRef.current && map && map.hasLayer(markerRef.current)) {
         try {
-            markerRef.current.remove();
+          markerRef.current.remove();
         } catch (e) {
-            // console.warn("Could not remove marker during cleanup:", e);
+          // console.warn("Could not remove marker during cleanup:", e);
         }
       }
       markerRef.current = null;
     };
   }, [map, markerPosition, popupText]);
 
-  return null; // This component does not render anything itself
+  return null;
 };
 
 interface LeafletMapComponentProps {
-  center: [number, number];
-  zoom: number;
+  targetCenter: [number, number]; // The actual center we want the map to be at
+  targetZoom: number;         // The actual zoom we want the map to be at
   markerPosition: [number, number] | null;
   popupText: string | null;
 }
 
 const LeafletMapComponent: React.FC<LeafletMapComponentProps> = ({
-  center,
-  zoom,
+  targetCenter,
+  targetZoom,
   markerPosition,
   popupText,
 }) => {
-  // MapContainer will mount once. Updates are handled by MapUpdater.
-  // If LeafletMapComponent itself is unmounted/remounted by its parent, 
-  // MapContainer will also unmount/remount, triggering its own cleanup.
   return (
     <MapContainer
-      center={center} // Initial center for the map
-      zoom={zoom}     // Initial zoom for the map
+      center={[defaultMapCenter.lat, defaultMapCenter.lng]} // Use fixed default center for initialization
+      zoom={defaultMapCenter.zoom || 2}                     // Use fixed default zoom for initialization
       scrollWheelZoom={true}
       style={{ height: '100%', width: '100%' }}
       className="rounded-md"
-      // No 'key' prop here to prevent re-initialization issues
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      {/* MapUpdater handles dynamic changes to center, zoom, and marker */}
       <MapUpdater
-        center={center}
-        zoom={zoom}
+        targetCenter={targetCenter} // Pass the dynamic target values to MapUpdater
+        targetZoom={targetZoom}
         markerPosition={markerPosition}
         popupText={popupText}
       />
