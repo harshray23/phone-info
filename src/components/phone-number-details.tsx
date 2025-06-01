@@ -39,7 +39,12 @@ const DetailItem: React.FC<{ icon: React.ElementType; label: string; value: stri
   } else if (typeof value === 'boolean') {
     displayValue = value ? "Yes" : "No";
   } else if (typeof value === 'number') {
-    displayValue = value.toFixed(4); // Format numbers to 4 decimal places
+    // Check if the label is for latitude or longitude to apply specific formatting
+    if (label.toLowerCase().includes("latitude") || label.toLowerCase().includes("longitude")) {
+      displayValue = value.toFixed(4); // Format geo-coordinates to 4 decimal places
+    } else {
+      displayValue = String(value); // General number formatting
+    }
   }
 
 
@@ -76,9 +81,9 @@ export function PhoneNumberDetails({ details, latitude, longitude }: PhoneNumber
         <Separator />
         <DetailItem icon={Clock} label="Timezone(s)" value={details.timezone} />
         <Separator />
-         <DetailItem icon={LocateFixed} label="Latitude" value={latitude} />
+         <DetailItem icon={LocateFixed} label="Approx. Latitude (Country)" value={latitude} />
         <Separator />
-        <DetailItem icon={Compass} label="Longitude" value={longitude} />
+        <DetailItem icon={Compass} label="Approx. Longitude (Country)" value={longitude} />
         <Separator />
         <div className="flex items-start space-x-3 py-3">
           {details.isValidNumber === null ? <HelpCircle className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" /> : details.isValidNumber ? <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 shrink-0" /> : <XCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />}
@@ -105,3 +110,4 @@ export function PhoneNumberDetails({ details, latitude, longitude }: PhoneNumber
     </Card>
   );
 }
+
