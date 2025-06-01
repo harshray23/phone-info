@@ -1,10 +1,10 @@
 
 "use client";
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
+import L, { type Map as LeafletMapInstance } from 'leaflet'; // Import Map type
 import { defaultMapCenter } from '@/lib/country-coordinates';
 
 // Fix for default icon path issue with Webpack in Next.js
@@ -20,8 +20,8 @@ if (typeof window !== 'undefined') {
 }
 
 interface MapUpdaterProps {
-  targetCenter: L.LatLngExpression; // Renamed from 'center'
-  targetZoom: number;           // Renamed from 'zoom'
+  targetCenter: L.LatLngExpression;
+  targetZoom: number;
   markerPosition: [number, number] | null;
   popupText: string | null;
 }
@@ -67,8 +67,8 @@ const MapUpdater: React.FC<MapUpdaterProps> = ({ targetCenter, targetZoom, marke
 };
 
 interface LeafletMapComponentProps {
-  targetCenter: [number, number]; // The actual center we want the map to be at
-  targetZoom: number;         // The actual zoom we want the map to be at
+  targetCenter: [number, number];
+  targetZoom: number;
   markerPosition: [number, number] | null;
   popupText: string | null;
 }
@@ -79,6 +79,17 @@ const LeafletMapComponent: React.FC<LeafletMapComponentProps> = ({
   markerPosition,
   popupText,
 }) => {
+  const [mapInstance, setMapInstance] = useState<LeafletMapInstance | null>(null);
+
+  useEffect(() => {
+    // Cleanup function to remove the map instance when the component unmounts
+    return () => {
+      if (mapInstance) {
+        mapInstance.remove();
+      }
+    };
+  }, [mapInstance]); // This effect depends on mapInstance
+
   return (
     <MapContainer
       center={[defaultMapCenter.lat, defaultMapCenter.lng]} // Use fixed default center for initialization
@@ -86,13 +97,14 @@ const LeafletMapComponent: React.FC<LeafletMapComponentProps> = ({
       scrollWheelZoom={true}
       style={{ height: '100%', width: '100%' }}
       className="rounded-md"
+      whenCreated={setMapInstance} // Capture the map instance
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <MapUpdater
-        targetCenter={targetCenter} // Pass the dynamic target values to MapUpdater
+        targetCenter={targetCenter}
         targetZoom={targetZoom}
         markerPosition={markerPosition}
         popupText={popupText}
