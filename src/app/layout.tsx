@@ -1,10 +1,11 @@
+
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'Phone Number Info Lookup',
-  description: 'Get detailed information about any phone number.',
+  title: 'TraceIt - Phone Number Info',
+  description: 'Trace and get details for any phone number with TraceIt.',
 };
 
 export default function RootLayout({

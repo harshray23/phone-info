@@ -59,7 +59,11 @@ export default function HomePage() {
       <div className="w-full max-w-2xl space-y-8">
         <Card className="w-full shadow-2xl overflow-hidden">
           <CardHeader className="bg-primary text-primary-foreground p-6">
-            <CardTitle className="text-3xl font-headline text-center">Phone Number Info Lookup</CardTitle>
+            <CardTitle className="text-3xl font-headline text-center">
+              <span className="bg-gradient-to-r from-lime-400 via-green-500 to-emerald-400 text-transparent bg-clip-text">
+                TraceIt
+              </span>
+            </CardTitle>
             <CardDescription className="text-primary-foreground/90 text-center font-body text-sm pt-1">
               Enter an international phone number to get its details.
             </CardDescription>
