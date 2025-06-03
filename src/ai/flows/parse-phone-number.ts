@@ -60,7 +60,7 @@ const getPhoneNumberTypeString = (type: PhoneNumberType | undefined): string | n
 
 const parsePhoneNumberTool = ai.defineTool({
     name: 'parsePhoneNumberLibTool',
-    description: 'Parses a phone number using google-libphonenumber to get basic details. This tool provides countryCode, nationalNumber, e164Format, timezone, isValidNumber, numberType, and isPossibleNumber. It returns null for regionDescription, carrier, regionLatitude, and regionLongitude, which should be determined by the LLM.',
+    description: 'Parses a phone number using google-libphonenumber to get basic details. This tool provides countryCode, nationalNumber, e164Format, timezone (if available directly from the library for the number), isValidNumber, numberType, and isPossibleNumber. It returns null for regionDescription, carrier, regionLatitude, and regionLongitude, which should be determined by the LLM.',
     inputSchema: ParsePhoneNumberInputSchema,
     outputSchema: ParsePhoneNumberOutputSchema, 
   },
@@ -121,7 +121,7 @@ First, use the 'parsePhoneNumberLibTool' to get foundational information. This t
 - countryCode (e.g., 'US', 'IN')
 - nationalNumber
 - e164Format
-- timezone (if available from the library)
+- timezone (this will be non-null if the library directly found timezones for the number; otherwise it will be null)
 - isValidNumber
 - numberType
 - isPossibleNumber
@@ -132,8 +132,9 @@ After getting the tool's output, your main responsibility is to:
 1. Determine the 'regionDescription': This is the specific State or Region name (e.g., "California", "West Bengal", "New South Wales"), not just the country name. Use the 'countryCode' and 'nationalNumber' from the tool's output and your general knowledge to deduce this.
 2. Determine the 'carrier': This is the telecommunications company providing service for the number (e.g., "Verizon", "Reliance Jio", "Vodafone"). Use the 'countryCode', 'nationalNumber', and your general knowledge.
 3. Determine 'regionLatitude' and 'regionLongitude': These are the approximate geographic coordinates (latitude and longitude) for the 'regionDescription' you identified in step 1. Use your general knowledge or an internal geolocation lookup if available.
+4. Determine the 'timezone': If the 'parsePhoneNumberLibTool' provided 'null' for the 'timezone' field, use your knowledge of the 'regionDescription' (or 'countryCode' if the region is unknown) to determine the appropriate IANA timezone(s) for the phone number (e.g., "America/Los_Angeles", "Asia/Kolkata"). If multiple timezones apply to the region (e.g., for a large country or region with multiple timezones), you can list them separated by a comma. If the tool already provided a timezone, use that value.
 
-Combine the information from the tool with your determined 'regionDescription', 'carrier', 'regionLatitude', and 'regionLongitude'.
+Combine the information from the tool with your determined 'regionDescription', 'carrier', 'regionLatitude', 'regionLongitude', and (if you determined it) 'timezone'.
 Return all fields as defined in the ParsePhoneNumberOutputSchema.
 If you cannot confidently determine any of these, you may return them as null.
 Ensure the output strictly adheres to the ParsePhoneNumberOutputSchema.
