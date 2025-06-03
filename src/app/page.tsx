@@ -43,14 +43,14 @@ export default function HomePage() {
   return (
     <main className="flex flex-col items-center justify-center min-h-screen p-4 sm:p-8">
       <div className="w-full max-w-2xl space-y-8">
-        <Card className="w-full shadow-2xl overflow-hidden">
-          <CardHeader className="bg-primary text-primary-foreground p-6">
-            <CardTitle className="text-3xl font-headline text-center">
+        <Card className="w-full shadow-xl overflow-hidden">
+          <CardHeader className="bg-card border-b p-6">
+            <CardTitle className="text-4xl font-headline font-bold text-center">
                <span className="bg-gradient-to-r from-green-400 via-emerald-500 to-teal-600 text-transparent bg-clip-text">
                 TraceIt
               </span>
             </CardTitle>
-            <CardDescription className="text-primary-foreground/90 text-center font-body text-sm pt-1">
+            <CardDescription className="text-muted-foreground text-center text-sm pt-2">
               Enter an international phone number to get its details.
             </CardDescription>
           </CardHeader>
@@ -100,13 +100,13 @@ export default function HomePage() {
       </div>
 
       {userTimezone && (
-        <div className="text-center text-sm text-muted-foreground mt-8 py-2 font-body flex items-center justify-center">
-          <Globe2 className="h-4 w-4 mr-2 text-primary" />
+        <div className="text-center text-sm text-muted-foreground mt-8 py-2 flex items-center justify-center">
+          <Globe2 className="h-4 w-4 mr-2 text-accent" />
           Your current timezone: <span className="font-semibold ml-1">{userTimezone}</span>
         </div>
       )}
 
-      <footer className="text-center text-sm text-muted-foreground pt-2 pb-8 font-body">
+      <footer className="text-center text-sm text-muted-foreground pt-2 pb-8">
         Powered by Next.js, Genkit, and ShadCN UI.
       </footer>
     </main>

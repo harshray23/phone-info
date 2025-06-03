@@ -14,6 +14,7 @@ import {
   HelpCircle,
   AlertCircle,
   Smartphone,
+  LocateFixed, // For approximate location
 } from "lucide-react";
 
 interface PhoneNumberDetailsProps {
@@ -27,7 +28,7 @@ const DetailItem: React.FC<{ icon: React.ElementType; label: string; value: stri
   valueClassName
 }) => {
   let displayValue: string | React.ReactNode = String(value);
-  let iconColorClass = "text-primary";
+  let iconColorClass = "text-accent"; // Changed from text-primary to text-accent
 
   if (value === null || value === undefined || value === "" || (typeof value === 'number' && isNaN(value))) {
     displayValue = "Not available";
@@ -53,10 +54,13 @@ const DetailItem: React.FC<{ icon: React.ElementType; label: string; value: stri
 
 
 export function PhoneNumberDetails({ details }: PhoneNumberDetailsProps) {
+  const locationScope = details.regionLatitude && details.regionLongitude ? "Region" : "Country";
+  const latitudeToDisplay = details.regionLatitude ?? details.countryLatitude;
+  const longitudeToDisplay = details.regionLongitude ?? details.countryLongitude;
 
   return (
     <Card className="w-full shadow-lg overflow-hidden">
-      <CardHeader className="bg-gray-50 dark:bg-gray-800">
+      <CardHeader className="bg-muted">
         <CardTitle className="text-2xl font-headline text-primary">Phone Number Details</CardTitle>
       </CardHeader>
       <CardContent className="space-y-1 p-6">
@@ -64,6 +68,14 @@ export function PhoneNumberDetails({ details }: PhoneNumberDetailsProps) {
         <Separator />
         <DetailItem icon={MapPin} label="State/Region" value={details.regionDescription} />
         <Separator />
+        { (latitudeToDisplay || longitudeToDisplay) && (
+          <>
+            <DetailItem icon={LocateFixed} label={`Approx. Latitude (${locationScope})`} value={latitudeToDisplay ? latitudeToDisplay.toFixed(4) : null} />
+            <Separator />
+            <DetailItem icon={LocateFixed} label={`Approx. Longitude (${locationScope})`} value={longitudeToDisplay ? longitudeToDisplay.toFixed(4) : null} />
+            <Separator />
+          </>
+        )}
         <DetailItem icon={Phone} label="E.164 Format" value={details.e164Format} />
         <Separator />
         <DetailItem icon={Hash} label="National Number" value={details.nationalNumber} />

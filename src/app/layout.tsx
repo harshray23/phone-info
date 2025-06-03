@@ -1,7 +1,15 @@
 
 import type {Metadata} from 'next';
+import { Inter } from 'next/font/google'; // Import Inter font
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
+
+// Configure Inter font
+const inter = Inter({ 
+  subsets: ['latin'],
+  variable: '--font-sans', // CSS variable for Inter
+  weight: ['400', '500', '600', '700'] 
+});
 
 export const metadata: Metadata = {
   title: 'TraceIt - Phone Number Info',
@@ -14,14 +22,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${inter.variable}`}> {/* Apply font variable to html tag */}
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;700&display=swap" rel="stylesheet" />
+        {/* Removed direct Google Font links, using next/font instead */}
       </head>
-      <body className="font-body antialiased min-h-screen flex flex-col">
+      <body className="font-sans antialiased min-h-screen flex flex-col"> {/* Use font-sans from Tailwind config */}
         {children}
         <Toaster />
       </body>

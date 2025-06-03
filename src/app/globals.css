@@ -3,30 +3,30 @@
 @tailwind utilities;
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), sans-serif; /* Updated to use a CSS variable for font */
 }
 
 @layer base {
   :root {
-    --background: 200 17% 94%; /* Light Gray #ECEFF1 */
-    --foreground: 240 10% 3.9%; /* Default Dark Gray */
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 233 53% 41%; /* Dark Blue #303F9F */
-    --primary-foreground: 210 40% 98%; /* Light color for text on primary */
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 45 100% 52%; /* Amber #FFC107 */
-    --accent-foreground: 45 100% 15%; /* Dark color for text on accent */
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 233 53% 41%; /* Use primary for ring */
+    --background: 210 40% 98%; /* Very Light Cool Gray */
+    --foreground: 215 25% 27%; /* Dark Desaturated Blue */
+    --card: 0 0% 100%; /* White */
+    --card-foreground: 215 25% 27%; /* Dark Desaturated Blue */
+    --popover: 0 0% 100%; /* White */
+    --popover-foreground: 215 25% 27%; /* Dark Desaturated Blue */
+    --primary: 220 70% 50%; /* Balanced, Modern Blue */
+    --primary-foreground: 0 0% 100%; /* White */
+    --secondary: 210 30% 90%; /* Light Gray-Blue */
+    --secondary-foreground: 215 20% 35%; /* Darker Gray-Blue for text */
+    --muted: 210 30% 94%; /* Very Light Gray-Blue */
+    --muted-foreground: 215 20% 50%; /* Medium Gray-Blue for text */
+    --accent: 30 100% 55%; /* Vibrant Orange */
+    --accent-foreground: 0 0% 100%; /* White */
+    --destructive: 0 70% 50%; /* Balanced Red */
+    --destructive-foreground: 0 0% 100%; /* White */
+    --border: 210 20% 85%; /* Slightly visible border */
+    --input: 210 20% 90%; /* Input background */
+    --ring: 220 70% 50%; /* Primary color for rings */
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
@@ -43,25 +43,25 @@ body {
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 233 53% 51%; /* Adjusted Dark Blue for dark mode */
-    --primary-foreground: 233 50% 95%; 
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 45 100% 62%; /* Adjusted Amber for dark mode */
-    --accent-foreground: 45 100% 5%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 233 53% 51%; /* Adjusted primary for ring in dark mode */
+    --background: 215 28% 17%; /* Dark Cool Blue/Gray */
+    --foreground: 210 40% 90%; /* Light Gray */
+    --card: 215 28% 17%; /* Dark Cool Blue/Gray */
+    --card-foreground: 210 40% 90%; /* Light Gray */
+    --popover: 215 28% 17%; /* Dark Cool Blue/Gray */
+    --popover-foreground: 210 40% 90%; /* Light Gray */
+    --primary: 220 70% 60%; /* Slightly lighter blue */
+    --primary-foreground: 0 0% 100%; /* White */
+    --secondary: 215 25% 25%; /* Darker Gray-Blue */
+    --secondary-foreground: 210 35% 80%; /* Lighter Gray-Blue for text */
+    --muted: 215 25% 22%; /* Darker Gray-Blue for muted */
+    --muted-foreground: 210 30% 65%; /* Lighter Muted text */
+    --accent: 30 100% 60%; /* Slightly lighter orange */
+    --accent-foreground: 30 100% 10%; /* Dark Brown for text on orange */
+    --destructive: 0 60% 55%; /* Slightly adjusted red */
+    --destructive-foreground: 0 0% 100%; /* White */
+    --border: 215 20% 30%; /* Darker border */
+    --input: 215 20% 28%; /* Darker input background */
+    --ring: 220 70% 60%; /* Primary color for rings */
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
