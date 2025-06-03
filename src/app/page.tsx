@@ -7,7 +7,7 @@ import { PhoneNumberForm } from "@/components/phone-number-form";
 import { PhoneNumberDetails } from "@/components/phone-number-details";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Terminal } from "lucide-react";
+import { Terminal, Globe2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 
@@ -15,6 +15,12 @@ export default function HomePage() {
   const [phoneNumberDetails, setPhoneNumberDetails] = useState<ParsePhoneNumberOutput | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [userTimezone, setUserTimezone] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Get user's timezone on the client side after hydration
+    setUserTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone);
+  }, []);
 
   const handleSuccess = (data: ParsePhoneNumberOutput) => {
     setPhoneNumberDetails(data);
@@ -72,11 +78,11 @@ export default function HomePage() {
                 <Skeleton className="h-8 w-3/5" /> {/* For Title "Phone Number Details" */}
               </CardHeader>
               <CardContent className="space-y-4">
-                {[...Array(10)].map((_, i) => ( 
+                {[...Array(8)].map((_, i) => ( 
                   <div key={i} className="space-y-2">
                     <Skeleton className="h-4 w-1/4" />
                     <Skeleton className="h-4 w-full" />
-                    {i < 9 && <Skeleton className="h-px w-full mt-2" />}
+                    {i < 7 && <Skeleton className="h-px w-full mt-2" />}
                   </div>
                 ))}
               </CardContent>
@@ -92,7 +98,15 @@ export default function HomePage() {
           </div>
         )}
       </div>
-      <footer className="text-center text-sm text-muted-foreground py-8 font-body">
+
+      {userTimezone && (
+        <div className="text-center text-sm text-muted-foreground mt-8 py-2 font-body flex items-center justify-center">
+          <Globe2 className="h-4 w-4 mr-2 text-primary" />
+          Your current timezone: <span className="font-semibold ml-1">{userTimezone}</span>
+        </div>
+      )}
+
+      <footer className="text-center text-sm text-muted-foreground pt-2 pb-8 font-body">
         Powered by Next.js, Genkit, and ShadCN UI.
       </footer>
     </main>
