@@ -5,10 +5,10 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 // Configure Inter font
-const inter = Inter({ 
+const inter = Inter({
   subsets: ['latin'],
   variable: '--font-sans', // CSS variable for Inter
-  weight: ['400', '500', '600', '700'] 
+  weight: ['400', '500', '600', '700']
 });
 
 export const metadata: Metadata = {
@@ -22,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable}`}> {/* Apply font variable to html tag */}
+    <html lang="en" className={inter.variable} suppressHydrationWarning={true}> {/* Apply font variable to html tag and suppress hydration warning */}
       <head>
         {/* Removed direct Google Font links, using next/font instead */}
       </head>
