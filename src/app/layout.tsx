@@ -26,7 +26,7 @@ export default function RootLayout({
       <head>
         {/* Removed direct Google Font links, using next/font instead */}
       </head>
-      <body className="font-sans antialiased min-h-screen flex flex-col"> {/* Use font-sans from Tailwind config */}
+      <body className="font-sans antialiased min-h-screen flex flex-col" suppressHydrationWarning={true}> {/* Use font-sans from Tailwind config and suppress hydration warning */}
         {children}
         <Toaster />
       </body>
