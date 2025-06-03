@@ -22,11 +22,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable} suppressHydrationWarning={true}> {/* Apply font variable to html tag and suppress hydration warning */}
+    <html lang="en" className={inter.variable} suppressHydrationWarning={true}>
       <head>
-        {/* Removed direct Google Font links, using next/font instead */}
       </head>
-      <body className="font-sans antialiased min-h-screen flex flex-col" suppressHydrationWarning={true}> {/* Use font-sans from Tailwind config and suppress hydration warning */}
+      <body className="font-sans antialiased min-h-screen flex flex-col" suppressHydrationWarning={true}>
         {children}
         <Toaster />
       </body>
