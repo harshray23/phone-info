@@ -10,7 +10,7 @@ To get started, take a look at src/app/page.tsx.
 1.  Create a `.env` file in the root of your project.
 2.  Add your Google AI API key to the `.env` file:
     ```
-    GOOGLE_API_KEY=YOUR_API_KEY_HERE
+    GOOGLE_API_KEY=AIzaSyAMWGGAarWjYltqTf2fPG-SfBcG-_Kl3W0
     ```
     Replace `YOUR_API_KEY_HERE` with your actual API key.
 
